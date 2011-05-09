@@ -1,0 +1,33 @@
+name: Worlds
+main: net.preoccupied.bukkit.worlds.WorldsPlugin
+version: 0.1
+author: obriencj@gmail.com
+database: false
+description: Load multiple worlds
+
+commands:
+  world:
+    desciption: "Teleport to a world's default spawn point"
+    usage: /world WORLD-NAME
+    permission: preoccupied.worlds.teleport
+
+  world-list:
+    description: A list of available worlds
+    usage: /world-list
+    permission: preoccupied.worlds.info
+
+  world-info:
+    description: Information on a specific world
+    usage: /world-info WORLD-NAME
+    permission: preoccupied.worlds.info
+
+  world-enable:
+    description: Enables a world
+    usage: /world-enable WORLD-NAME
+    permission: preoccupied.worlds.admin
+
+  world-disable:
+    description: Disables a world
+    usage: /world-disable WORLD-NAME
+    permission: preoccupied.worlds.admin
+
