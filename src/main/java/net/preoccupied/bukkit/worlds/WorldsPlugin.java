@@ -35,10 +35,11 @@ import net.preoccupied.bukkit.permissions.PermissionCommand;
 public class WorldsPlugin extends JavaPlugin {
 
 
+    /* environment kindness levels */
     private static final int
-	KIND_NO_PLAYER = 1,
-	KIND_NO_MONSTER = 2,
-	KIND_NO_ENVIRONMENT = 4;
+	KIND_NO_PLAYER = 1,      /* can't be hurt by another player */
+	KIND_NO_MONSTER = 2,     /* can't be hurt by a monster */
+	KIND_NO_ENVIRONMENT = 4; /* can't be hurt by falling, cactus, tnt */ 
 
 
     private Map<String, Configuration> worldSettings = null;
@@ -96,9 +97,9 @@ public class WorldsPlugin extends JavaPlugin {
 
     private void loadWorld(String name, Configuration conf, boolean force) {
 	boolean animals = true, monsters = true;
-	boolean hell = false;
 	boolean pvp = true, pvm = true, pve = true;
 	boolean enabled = true;
+	String envs = "NORMAL";
 	String seed = null;
 
 	enabled = conf.getBoolean("world.enabled", enabled) || force;
@@ -109,10 +110,10 @@ public class WorldsPlugin extends JavaPlugin {
 	pvp = conf.getBoolean("world.pvp", pvp);
 	pvm = conf.getBoolean("world.pvm", pvm);
 	pve = conf.getBoolean("world.pve", pve);
-	hell = conf.getBoolean("world.hellworld", hell);
+	envs = conf.getString("world.environment", envs);
 	seed = conf.getString("world.seed", seed);
 
-	Environment env = hell? Environment.NETHER: Environment.NORMAL;
+	Environment env = Environment.valueOf(envs.toUpperCase());
 
 	World world = null;
 	if(seed == null) {
@@ -142,6 +143,19 @@ public class WorldsPlugin extends JavaPlugin {
 
 
 
+    /*
+      Here we catch the event that causes a player to be damaged, and
+      depending on the settings for the world, cancel it.
+
+      We differentiate the following types of damage:
+      - Player hurting a player (pvp)
+      - Monster hurting a player (pvm)
+      - Environment hurting a player (pve)
+
+      The last is a bit off, since I left Lava and Drowning options
+      enabled, however I do turn off cactus, fall damage, and
+      explosions.
+    */
     private void onEntityDamage(EntityDamageEvent ede) {
 	if(ede.isCancelled()) return;
 
@@ -208,7 +222,7 @@ public class WorldsPlugin extends JavaPlugin {
 		for(Map.Entry<String,Configuration> entry : worldSettings.entrySet()) {
 		    String name = entry.getKey();
 		    World world = Bukkit.getServer().getWorld(name);
-		    msg(player, " " + entry.getKey() + ((world==null)?"[disabled]":"[enabled]"));
+		    msg(player, " " + entry.getKey() + ((world==null)?" [disabled]":" [enabled]"));
 		}
 		return true;
 	    }
@@ -226,8 +240,12 @@ public class WorldsPlugin extends JavaPlugin {
 		}
 
 		msg(player, "Information for World: " + worldname);
-		msg(player, " Status: " + ((world==null)?"disabled":"enabled"));
-		// todo: monsters, environment, etc.
+		msg(player, " Title: " + conf.getString("title", worldname));
+		msg(player, " Status: " + ((world==null)? "disabled": "enabled"));
+
+		if(world != null) {
+		    msg(player, " Environment: " + world.getEnvironment());
+		}
 		
 		return true;
 	    }
