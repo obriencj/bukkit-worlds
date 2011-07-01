@@ -27,8 +27,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
-import org.bukkit.craftbukkit.CraftWorld;
-
 import net.preoccupied.bukkit.permissions.PermissionCommand;
 
 
@@ -49,6 +47,8 @@ public class WorldsPlugin extends JavaPlugin {
 
 
     public void onEnable() {
+	loadWorlds();
+
 	PluginManager pm = getServer().getPluginManager();
 
 	EventExecutor ee;
@@ -71,6 +71,12 @@ public class WorldsPlugin extends JavaPlugin {
 
 
     public void onLoad() {
+	;
+    }
+
+
+
+    private void loadWorlds() {
 	worldSettings = new HashMap<String, Configuration>();
 	worldKindness = new HashMap<World, Integer>();
 
@@ -101,6 +107,7 @@ public class WorldsPlugin extends JavaPlugin {
 	boolean enabled = true;
 	String envs = "NORMAL";
 	String seed = null;
+	String title = name;
 
 	enabled = conf.getBoolean("world.enabled", enabled) || force;
 	if(! enabled) return;
@@ -112,6 +119,7 @@ public class WorldsPlugin extends JavaPlugin {
 	pve = conf.getBoolean("world.pve", pve);
 	envs = conf.getString("world.environment", envs);
 	seed = conf.getString("world.seed", seed);
+	title = conf.getString("world.title", title);
 
 	Environment env = Environment.valueOf(envs.toUpperCase());
 
@@ -121,7 +129,6 @@ public class WorldsPlugin extends JavaPlugin {
 	} else {
 	    world = Bukkit.getServer().createWorld(name, env, Long.parseLong(seed));
 	}
-	System.out.println("loaded level \"" + name + "\"");
 
 	int kind = 0;
 	kind |= pvp? 0: KIND_NO_PLAYER;
@@ -129,9 +136,10 @@ public class WorldsPlugin extends JavaPlugin {
 	kind |= pve? 0: KIND_NO_ENVIRONMENT;
 	worldKindness.put(world, kind);
 
-	// this hasn't been exposed in vanilla Bukkit yet.
-	CraftWorld cworld = (CraftWorld) world;
-	cworld.getHandle().setSpawnFlags(monsters, animals);
+	world.setPVP(pvp);
+	world.setSpawnFlags(monsters, animals);
+
+	System.out.println("loaded level \"" + name + "\"");
     }
 
 
