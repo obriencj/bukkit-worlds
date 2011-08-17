@@ -47,6 +47,8 @@ public class WorldsPlugin extends JavaPlugin {
 
 
     public void onEnable() {
+	System.out.println("Worlds.onEnable()");
+
 	loadWorlds();
 
 	PluginManager pm = getServer().getPluginManager();
@@ -65,12 +67,6 @@ public class WorldsPlugin extends JavaPlugin {
 
 
     public void onDisable() {
-	;
-    }
-
-
-
-    public void onLoad() {
 	;
     }
 

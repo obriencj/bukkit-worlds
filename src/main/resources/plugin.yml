@@ -4,6 +4,8 @@ version: 0.1
 author: obriencj@gmail.com
 database: false
 description: Load multiple worlds
+order: postworld
+
 
 commands:
   world:
@@ -31,3 +33,29 @@ commands:
     usage: /world-disable WORLD-NAME
     permission: preoccupied.worlds.admin
 
+
+permissions:
+  preoccupied.worlds.admin:
+    description: Administrative options for multi-world support
+    default: op
+    children:
+      preoccupied.worlds.info: true
+      preoccupied.worlds.teleport: true
+
+  preoccupied.worlds.advanced:
+    description: Advanced users options for multi-world support
+    default: false
+    children:
+      preoccupied.worlds.info: true
+      preoccupied.worlds.teleport: true
+      
+  preoccupied.worlds.info:
+    description: Listing and getting information for worlds
+    default: false
+
+  preoccupied.worlds.teleport:
+    description: Teleport to the spawn location of a world
+    default: false
+
+
+# The end.
