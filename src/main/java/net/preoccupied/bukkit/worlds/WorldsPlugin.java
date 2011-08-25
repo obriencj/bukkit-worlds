@@ -45,8 +45,6 @@ public class WorldsPlugin extends JavaPlugin {
 
 
     public void onEnable() {
-	System.out.println("Worlds.onEnable()");
-
 	loadWorlds();
 
 	PluginManager pm = getServer().getPluginManager();
@@ -60,12 +58,14 @@ public class WorldsPlugin extends JavaPlugin {
 	pm.registerEvent(Event.Type.ENTITY_DAMAGE, null, ee, Priority.Normal, this);
 
 	setupCommands();
+
+	getServer().getLogger().info(this + " is enabled");
     }
 
 
 
     public void onDisable() {
-	;
+	getServer().getLogger().info(this + " is disabled");
     }
 
 
@@ -133,7 +133,7 @@ public class WorldsPlugin extends JavaPlugin {
 	world.setPVP(pvp);
 	world.setSpawnFlags(monsters, animals);
 
-	System.out.println("loaded level \"" + name + "\"");
+	System.out.println("loaded configuration for \"" + name + "\"");
     }
 
 
