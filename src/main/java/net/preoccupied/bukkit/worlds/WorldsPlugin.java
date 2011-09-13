@@ -25,7 +25,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
-import net.preoccupied.bukkit.permissions.PermissionCommand;
+import net.preoccupied.bukkit.PlayerCommand;
 
 
 public class WorldsPlugin extends JavaPlugin {
@@ -133,7 +133,7 @@ public class WorldsPlugin extends JavaPlugin {
 	world.setPVP(pvp);
 	world.setSpawnFlags(monsters, animals);
 
-	System.out.println("loaded configuration for \"" + name + "\"");
+	getServer().getLogger().info("loaded configuration for " + name);
     }
 
 
@@ -204,11 +204,11 @@ public class WorldsPlugin extends JavaPlugin {
     
     private void setupCommands() {
 	
-	new PermissionCommand(this, "world") {
+	new PlayerCommand(this, "world") {
 	    public boolean run(Player player, String worldname) {
 		World world = Bukkit.getServer().getWorld(worldname);
 		if(world == null) {
-		    msg(player, "No such world: " + worldname);
+		    msg(player, "No such world:", worldname);
 		    return true;
 		}
 
@@ -218,35 +218,35 @@ public class WorldsPlugin extends JavaPlugin {
 	};
 
 
-	new PermissionCommand(this, "world-list") {
+	new PlayerCommand(this, "world-list") {
 	    public boolean run(Player player) {
 		msg(player, "World names:");
 		for(Map.Entry<String,Configuration> entry : worldSettings.entrySet()) {
 		    String name = entry.getKey();
 		    World world = Bukkit.getServer().getWorld(name);
-		    msg(player, " " + entry.getKey() + ((world==null)?" [disabled]":" [enabled]"));
+		    msg(player, " ", entry.getKey(), ((world==null)? "[disabled]":"[enabled]"));
 		}
 		return true;
 	    }
 	};
 
 
-	new PermissionCommand(this, "world-info") {
+	new PlayerCommand(this, "world-info") {
 	    public boolean run(Player player, String worldname) {
 		Configuration conf = worldSettings.get(worldname);
 		World world = Bukkit.getServer().getWorld(worldname);
 
 		if(world == null && conf == null) {
-		    msg(player, "No such world: " + worldname);
+		    msg(player, "No such world:", worldname);
 		    return true;
 		}
 
-		msg(player, "Information for World: " + worldname);
-		msg(player, " Title: " + conf.getString("title", worldname));
-		msg(player, " Status: " + ((world==null)? "disabled": "enabled"));
+		msg(player, "Information for World:", worldname);
+		msg(player, " Title:", conf.getString("title", worldname));
+		msg(player, " Status:", ((world==null)? "disabled": "enabled"));
 
 		if(world != null) {
-		    msg(player, " Environment: " + world.getEnvironment());
+		    msg(player, " Environment:", world.getEnvironment());
 		}
 		
 		return true;
