@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Entity;
@@ -22,6 +23,7 @@ import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -65,6 +67,13 @@ public class WorldsPlugin extends JavaPlugin {
 		}
 	    };
 	pm.registerEvent(Event.Type.PLAYER_CHANGED_WORLD, null, ee, Priority.Normal, this);
+
+	ee = new EventExecutor() {
+		public void execute(Listener ignored, Event e) {
+		    onPlayerTeleport((PlayerTeleportEvent) e);
+		}
+	    };
+	pm.registerEvent(Event.Type.PLAYER_TELEPORT, null, ee, Priority.Normal, this);
 
 	setupCommands();
 
@@ -218,6 +227,29 @@ public class WorldsPlugin extends JavaPlugin {
 	boolean creative = false;
 	Player player = pcwe.getPlayer();
 	String world = player.getWorld().getName();
+	Configuration conf = worldSettings.get(world);
+
+	if(conf != null) {
+	    creative = conf.getBoolean("world.creative", creative);
+	}
+	
+	GameMode mode = creative? GameMode.CREATIVE: GameMode.SURVIVAL;
+	player.setGameMode(mode);
+    }
+
+
+
+    private void onPlayerTeleport(PlayerTeleportEvent pte) {
+	Player player = pte.getPlayer();
+	Location orig, dest;
+	orig = pte.getFrom();
+	dest = pte.getTo();
+
+	if(orig.getWorld() == dest.getWorld())
+	    return;
+
+	boolean creative = false;
+	String world = dest.getWorld().getName();
 	Configuration conf = worldSettings.get(world);
 
 	if(conf != null) {
