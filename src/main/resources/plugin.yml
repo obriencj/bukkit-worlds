@@ -1,6 +1,6 @@
 name: Worlds
 main: net.preoccupied.bukkit.worlds.WorldsPlugin
-version: 0.1
+version: 0.2
 author: obriencj@gmail.com
 database: false
 description: Load multiple worlds

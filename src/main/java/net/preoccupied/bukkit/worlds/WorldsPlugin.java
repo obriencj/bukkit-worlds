@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Entity;
@@ -20,6 +21,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -40,8 +42,8 @@ public class WorldsPlugin extends JavaPlugin {
 
     private Map<String, Configuration> worldSettings = null;
     
-    private Map<World, Integer> worldKindness = null;
-
+    private Map<String, Integer> worldKindness = null;
+    private Map<String, Boolean> worldCreative = null;
 
 
     public void onEnable() {
@@ -56,6 +58,13 @@ public class WorldsPlugin extends JavaPlugin {
 		}
 	    };
 	pm.registerEvent(Event.Type.ENTITY_DAMAGE, null, ee, Priority.Normal, this);
+
+	ee = new EventExecutor() {
+		public void execute(Listener ignored, Event e) {
+		    onPlayerChangedWorld((PlayerChangedWorldEvent) e);
+		}
+	    };
+	pm.registerEvent(Event.Type.PLAYER_CHANGED_WORLD, null, ee, Priority.Normal, this);
 
 	setupCommands();
 
@@ -72,7 +81,8 @@ public class WorldsPlugin extends JavaPlugin {
 
     private void loadWorlds() {
 	worldSettings = new HashMap<String, Configuration>();
-	worldKindness = new HashMap<World, Integer>();
+	worldKindness = new HashMap<String, Integer>();
+	worldCreative = new HashMap<String, Boolean>();
 
 	if(getDataFolder().mkdirs())
 	    return;
@@ -104,7 +114,6 @@ public class WorldsPlugin extends JavaPlugin {
 	String title = name;
 
 	enabled = conf.getBoolean("world.enabled", enabled) || force;
-	if(! enabled) return;
 
 	animals = conf.getBoolean("world.animals", animals);
 	monsters = conf.getBoolean("world.monsters", monsters);
@@ -115,23 +124,26 @@ public class WorldsPlugin extends JavaPlugin {
 	seed = conf.getString("world.seed", seed);
 	title = conf.getString("world.title", title);
 
-	Environment env = Environment.valueOf(envs.toUpperCase());
-
-	World world = null;
-	if(seed == null) {
-	    world = Bukkit.getServer().createWorld(name, env);
-	} else {
-	    world = Bukkit.getServer().createWorld(name, env, Long.parseLong(seed));
-	}
-
 	int kind = 0;
 	kind |= pvp? 0: KIND_NO_PLAYER;
 	kind |= pvm? 0: KIND_NO_MONSTER;
 	kind |= pve? 0: KIND_NO_ENVIRONMENT;
-	worldKindness.put(world, kind);
+	worldKindness.put(name, kind);
 
-	world.setPVP(pvp);
-	world.setSpawnFlags(monsters, animals);
+	if(enabled) {
+	    // todo move this to an enableWorld method, and add an enable/disable-world command
+	    Environment env = Environment.valueOf(envs.toUpperCase());
+	    World world = null;
+
+	    if(seed == null) {
+		world = Bukkit.getServer().createWorld(name, env);
+	    } else {
+		world = Bukkit.getServer().createWorld(name, env, Long.parseLong(seed));
+	    }
+
+	    world.setPVP(pvp);
+	    world.setSpawnFlags(monsters, animals);
+	}
 
 	getServer().getLogger().info("loaded configuration for " + name);
     }
@@ -176,7 +188,7 @@ public class WorldsPlugin extends JavaPlugin {
 	    attacker = ev.getDamager();
 	}
 
-	Integer kindint = worldKindness.get(defender.getWorld());
+	Integer kindint = worldKindness.get(defender.getWorld().getName());
 	int kindness = 0;
 	if(kindint != null) kindness = kindint;
 
@@ -198,6 +210,22 @@ public class WorldsPlugin extends JavaPlugin {
 		}
 	    }
 	}
+    }
+
+
+
+    private void onPlayerChangedWorld(PlayerChangedWorldEvent pcwe) {
+	boolean creative = false;
+	Player player = pcwe.getPlayer();
+	String world = player.getWorld().getName();
+	Configuration conf = worldSettings.get(world);
+
+	if(conf != null) {
+	    creative = conf.getBoolean("world.creative", creative);
+	}
+	
+	GameMode mode = creative? GameMode.CREATIVE: GameMode.SURVIVAL;
+	player.setGameMode(mode);
     }
 
 
