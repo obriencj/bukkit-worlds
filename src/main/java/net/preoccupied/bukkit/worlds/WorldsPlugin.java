@@ -223,41 +223,43 @@ public class WorldsPlugin extends JavaPlugin {
 
 
 
-    private void onPlayerChangedWorld(PlayerChangedWorldEvent pcwe) {
-	boolean creative = false;
-	Player player = pcwe.getPlayer();
+    private void checkGameMode(Player player) {
 	String world = player.getWorld().getName();
 	Configuration conf = worldSettings.get(world);
+	boolean creative = false;
 
 	if(conf != null) {
 	    creative = conf.getBoolean("world.creative", creative);
 	}
 	
 	GameMode mode = creative? GameMode.CREATIVE: GameMode.SURVIVAL;
+	getServer().getLogger().info("setting game mode: " + mode.toString());
 	player.setGameMode(mode);
+
+    }
+
+
+
+    private void onPlayerChangedWorld(PlayerChangedWorldEvent pcwe) {
+	Player player = pcwe.getPlayer();
+
+	getServer().getLogger().info("onPlayerChangedWorld");
+	checkGameMode(player);
     }
 
 
 
     private void onPlayerTeleport(PlayerTeleportEvent pte) {
 	Player player = pte.getPlayer();
-	Location orig, dest;
-	orig = pte.getFrom();
-	dest = pte.getTo();
+	World orig, dest;
+	orig = pte.getFrom().getWorld();
+	dest = pte.getTo().getWorld();
 
-	if(orig.getWorld() == dest.getWorld())
-	    return;
+	getServer().getLogger().info("onPlayerTeleport");
 
-	boolean creative = false;
-	String world = dest.getWorld().getName();
-	Configuration conf = worldSettings.get(world);
-
-	if(conf != null) {
-	    creative = conf.getBoolean("world.creative", creative);
+	if(orig != dest) {
+	    checkGameMode(player);
 	}
-	
-	GameMode mode = creative? GameMode.CREATIVE: GameMode.SURVIVAL;
-	player.setGameMode(mode);
     }
 
 
