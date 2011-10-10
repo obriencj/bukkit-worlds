@@ -23,7 +23,6 @@ import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -67,13 +66,6 @@ public class WorldsPlugin extends JavaPlugin {
 		}
 	    };
 	pm.registerEvent(Event.Type.PLAYER_CHANGED_WORLD, null, ee, Priority.Normal, this);
-
-	ee = new EventExecutor() {
-		public void execute(Listener ignored, Event e) {
-		    onPlayerTeleport((PlayerTeleportEvent) e);
-		}
-	    };
-	pm.registerEvent(Event.Type.PLAYER_TELEPORT, null, ee, Priority.Normal, this);
 
 	setupCommands();
 
@@ -242,24 +234,7 @@ public class WorldsPlugin extends JavaPlugin {
 
     private void onPlayerChangedWorld(PlayerChangedWorldEvent pcwe) {
 	Player player = pcwe.getPlayer();
-
-	getServer().getLogger().info("onPlayerChangedWorld");
 	checkGameMode(player);
-    }
-
-
-
-    private void onPlayerTeleport(PlayerTeleportEvent pte) {
-	Player player = pte.getPlayer();
-	World orig, dest;
-	orig = pte.getFrom().getWorld();
-	dest = pte.getTo().getWorld();
-
-	getServer().getLogger().info("onPlayerTeleport");
-
-	if(orig != dest) {
-	    checkGameMode(player);
-	}
     }
 
 
